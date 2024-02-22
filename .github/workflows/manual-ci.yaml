@@ -51,6 +51,9 @@ jobs:
           allure_results: allure-results
           allure_history: allure-history
 
+      - name: Debug gh-pages directory
+        run: ls -R gh-pages
+
       - name: Deploy report to Github Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
