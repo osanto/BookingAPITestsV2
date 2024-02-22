@@ -34,11 +34,6 @@ jobs:
       - name: Debug Allure Results
         run: ls -R allure-results
         
-  generate-report:
-    runs-on: ubuntu-latest
-    needs: run-tests
-
-    steps:
       - name: Get Allure history
         uses: actions/checkout@v2
         if: always()
