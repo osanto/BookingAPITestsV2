@@ -46,6 +46,11 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          
+      - name: Run tests
+        if: always()
+        run: pytest --alluredir=allure-results
+        continue-on-error: true
 
       - name: Allure Report action from marketplace
         uses: simple-elf/allure-report-action@master
