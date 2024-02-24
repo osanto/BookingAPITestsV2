@@ -1,4 +1,4 @@
-name: Manual Test Run
+name: Test Run with 2 stages
 
 on:
     workflow_dispatch:
@@ -21,23 +21,39 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Display Python version and installed packages
-        run: |
-          python --version
-          pip list
-
       - name: Run tests
         if: always()
         run: pytest --alluredir=allure-results
         continue-on-error: true
-        
-      - name: Get Allure history
-        uses: actions/checkout@v3
-        if: always()
+
+      - name: List directory contents of allure-results
         continue-on-error: true
+        run: ls allure-results
+
+      - name: Upload artifact
+        continue-on-error: true
+        uses: actions/upload-pages-artifact@v2
+        with:
+          name: allure-results
+          path: allure-results
+          
+  generate-report:
+  
+    needs: run-tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get Allure history
+        uses: actions/checkout@v2
         with:
           ref: gh-pages
           path: gh-pages
+
+      - name: Import artifacts from test run
+        uses: actions/download-artifact@v2
+        with:
+          name: allure-results
+          path: allure-results
 
       - name: Allure Report action from marketplace
         uses: simple-elf/allure-report-action@master
@@ -55,13 +71,3 @@ jobs:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
-
-      - name: Post the link to the report
-        if: always()
-        uses: Sibz/github-status-action@v1
-        with: 
-          authToken: ${{secrets.GITHUB_TOKEN}}
-          context: 'Test report'
-          state: 'success'
-          sha: ${{github.event.pull_request.head.sha || github.sha}}
-          target_url: https://simple-elf.github.io/github-allure-history/${{ github.run_number }}
